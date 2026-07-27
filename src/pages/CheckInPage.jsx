@@ -21,6 +21,10 @@ import {
 } from "../services/truckService";
 
 import {
+  getDrivers
+} from "../services/driverService";
+
+import {
   createCheckIn
 } from "../services/checkInService";
 
@@ -50,7 +54,10 @@ export default function CheckInPage() {
   const [
     selectedTruckId,
     setSelectedTruckId
-  ] = useState("");
+  ] = useState();
+
+  const [drivers, setDrivers]= useState([]);
+const [selectedDriverId, setSelectedDriverId]= useState("");
 
   useEffect(() => {
 
@@ -65,15 +72,18 @@ export default function CheckInPage() {
 
         const [
           appointmentsData,
-          trucksData
+          trucksData,
+          driversData
         ] = await Promise.all([
           getAppointments(),
-          getTrucks()
+          getTrucks(),
+          getDrivers()
         ]);
 
         setAppointments(
           appointmentsData
         );
+        setDrivers(driversData);
 
         setTrucks(
           trucksData
@@ -101,6 +111,8 @@ const handleCheckIn =
           truckId:
             selectedTruckId,
 
+            driverId:selectedDriverId,
+
           createdById:
             user.id
 
@@ -121,9 +133,21 @@ const handleCheckIn =
         assignResult.assigned
       ) {
 
-        alert(
-          `✅ Check-In realizado\n\nDirigirse al dock ${assignResult.dockCode}`
-        );
+alert(
+  `✅ Check-In realizado
+
+WhatsApp destino:
+${assignResult.driverPhone}
+
+Mensaje:
+
+Hola ${assignResult.driverName},
+
+Su vehículo fue asignado al dock ${assignResult.dockCode}.
+
+Por favor diríjase al muelle indicado.`
+);
+
 
       } else {
 
@@ -138,6 +162,7 @@ const handleCheckIn =
       );
 
       setSelectedTruckId("");
+      setSelectedDriverId("");
 
       await loadData();
 
@@ -187,6 +212,7 @@ const handleCheckIn =
           setSelectedTruckId(
             ""
           );
+          setSelectedDriverId("");
 
         }}
       />
@@ -340,6 +366,47 @@ const handleCheckIn =
                   )}
 
                 </select>
+<strong>
+  Chofer:
+</strong>
+
+<select
+  value={selectedDriverId}
+  onChange={(e) =>
+    setSelectedDriverId(
+      e.target.value
+    )
+  }
+  className="
+    block
+    w-full
+    mt-2
+    border
+    rounded-lg
+    px-3
+    py-2
+  "
+>
+
+  <option value="">
+    Seleccionar chofer
+  </option>
+
+  {drivers.map(
+    (driver) => (
+
+      <option
+        key={driver.id}
+        value={driver.id}
+      >
+        {driver.firstName}{" "}
+        {driver.lastName}
+      </option>
+
+    )
+  )}
+
+</select>
 
               </div>
 
@@ -372,7 +439,7 @@ const handleCheckIn =
 
               <button
                 disabled={
-                  !selectedTruckId
+                  !selectedTruckId ||!selectedDriverId
                 }
                 onClick={
                   handleCheckIn
