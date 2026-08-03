@@ -77,6 +77,15 @@ console.log(user);
 
   const handleSubmit =
     async (e) => {
+if (!form.vehicleTypeId) {
+
+  alert(
+    "Debe seleccionar un tipo de vehículo."
+  );
+
+  return;
+
+}
 
       e.preventDefault();
 

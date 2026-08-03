@@ -118,16 +118,29 @@ const handleCheckIn =
 
         });
 
-      const assignResult =
-        await assignDock({
+let assignResult = {
+  assigned: false
+};
 
-          checkInId:
-            checkIn.id,
+if (
+  selectedAppointment
+    .dockGroup
+    ?.assignmentMode ===
+  "AUTO"
+) {
 
-          assignedById:
-            user.id
+  assignResult =
+    await assignDock({
 
-        });
+      checkInId:
+        checkIn.id,
+
+      assignedById:
+        user.id
+
+    });
+
+}
 
       if (
         assignResult.assigned
@@ -149,13 +162,25 @@ Por favor diríjase al muelle indicado.`
 );
 
 
-      } else {
+      } else if (
+  selectedAppointment
+    .dockGroup
+    ?.assignmentMode ===
+  "MANUAL"
+) {
 
-        alert(
-          "✅ Check-In realizado\n\nNo hay docks disponibles.\nVehículo enviado a cola de espera."
-        );
+  alert(
+    "✅ Check-In realizado\n\nVehículo enviado a cola de espera.\nLa asignación de dock será realizada por el planner."
+  );
 
-      }
+}
+else {
+
+  alert(
+    "✅ Check-In realizado\n\nNo hay docks disponibles.\nVehículo enviado a cola de espera."
+  );
+
+}
 
       setSelectedAppointment(
         null
