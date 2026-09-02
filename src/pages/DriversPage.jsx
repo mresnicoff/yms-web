@@ -8,7 +8,9 @@ import MainLayout
 
 import {
   getDrivers,
-  createDriver
+  createDriver,
+  updateDriver,
+  deleteDriver
 } from "../services/driverService";
 
 import {
@@ -60,6 +62,19 @@ export default function DriversPage() {
   ] = useState("");
 
   const [form, setForm] =
+    useState({
+      firstName: "",
+      lastName: "",
+      phone: "",
+      licenseNumber: ""
+    });
+
+  const [
+    editingDriver,
+    setEditingDriver
+  ] = useState(null);
+
+  const [editForm, setEditForm] =
     useState({
       firstName: "",
       lastName: "",
@@ -127,6 +142,102 @@ export default function DriversPage() {
         alert(
           error.response?.data?.message ||
           "Error al crear el chofer."
+        );
+
+      }
+
+    };
+
+  const openEdit =
+    (driver) => {
+
+      setEditingDriver(
+        driver
+      );
+
+      setEditForm({
+        firstName:
+          driver.firstName || "",
+        lastName:
+          driver.lastName || "",
+        phone:
+          driver.phone || "",
+        licenseNumber:
+          driver.licenseNumber || ""
+      });
+
+    };
+
+  const handleEditChange =
+    (e) => {
+
+      setEditForm({
+        ...editForm,
+        [e.target.name]:
+          e.target.value
+      });
+
+    };
+
+  const handleUpdate =
+    async (e) => {
+
+      e.preventDefault();
+
+      if (!editForm.firstName.trim() || !editForm.phone.trim()) {
+
+        alert(
+          "Debe completar al menos nombre y teléfono."
+        );
+
+        return;
+
+      }
+
+      try {
+
+        await updateDriver(
+          editingDriver.id,
+          editForm
+        );
+
+        setEditingDriver(null);
+
+        await loadDrivers();
+
+      } catch (error) {
+
+        alert(
+          error.response?.data?.message ||
+          "Error al actualizar el chofer."
+        );
+
+      }
+
+    };
+
+  const handleDelete =
+    async (driver) => {
+
+      const confirmed = window.confirm(
+        `¿Eliminar al chofer ${driver.firstName} ${driver.lastName || ""}? Esta acción no se puede deshacer desde la pantalla.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+
+        await deleteDriver(driver.id);
+
+        await loadDrivers();
+
+      } catch (error) {
+
+        alert(
+          error.response?.data?.message ||
+          "Error al eliminar el chofer."
         );
 
       }
@@ -377,6 +488,10 @@ const handleAddDocument =
                 Documentación
               </th>
 
+              <th className="p-4 text-left">
+                Acción
+              </th>
+
             </tr>
 
           </thead>
@@ -428,6 +543,50 @@ const handleAddDocument =
 
                   </td>
 
+                  <td className="p-4">
+
+                    <div className="flex gap-2">
+
+                      <button
+                        onClick={() =>
+                          openEdit(
+                            driver
+                          )
+                        }
+                        className="
+                          bg-slate-200
+                          hover:bg-slate-300
+                          text-slate-700
+                          px-3
+                          py-1
+                          rounded-lg
+                        "
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleDelete(
+                            driver
+                          )
+                        }
+                        className="
+                          bg-red-600
+                          hover:bg-red-700
+                          text-white
+                          px-3
+                          py-1
+                          rounded-lg
+                        "
+                      >
+                        Eliminar
+                      </button>
+
+                    </div>
+
+                  </td>
+
                 </tr>
 
               )
@@ -438,6 +597,76 @@ const handleAddDocument =
         </table>
 
       </div>
+
+{editingDriver && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl p-6 max-w-md w-full">
+
+      <h2 className="text-xl font-bold mb-4">
+        Editar chofer
+      </h2>
+
+      <form
+        onSubmit={handleUpdate}
+        className="flex flex-col gap-3"
+      >
+
+        <input
+          name="firstName"
+          placeholder="Nombre"
+          value={editForm.firstName}
+          onChange={handleEditChange}
+          className="border rounded-lg px-3 py-2"
+        />
+
+        <input
+          name="lastName"
+          placeholder="Apellido"
+          value={editForm.lastName}
+          onChange={handleEditChange}
+          className="border rounded-lg px-3 py-2"
+        />
+
+        <input
+          name="phone"
+          placeholder="WhatsApp"
+          value={editForm.phone}
+          onChange={handleEditChange}
+          className="border rounded-lg px-3 py-2"
+        />
+
+        <input
+          name="licenseNumber"
+          placeholder="N° de licencia"
+          value={editForm.licenseNumber}
+          onChange={handleEditChange}
+          className="border rounded-lg px-3 py-2"
+        />
+
+        <div className="flex justify-end gap-2 mt-2">
+
+          <button
+            type="button"
+            onClick={() => setEditingDriver(null)}
+            className="px-4 py-2 rounded-lg"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Guardar
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+)}
 
 {selectedDriver && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

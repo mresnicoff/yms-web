@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { getVehicleTypes } from "../services/catalogService";
-import { getTrucks, createTruck } from "../services/truckService";
+import { getTrucks, createTruck, updateTruck, deleteTruck } from "../services/truckService";
 import {
   getTruckDocuments,
   createDocument,
@@ -28,6 +28,13 @@ export default function TrucksPage() {
     vehicleTypeId: ""
   });
 
+  const [editingTruck, setEditingTruck] = useState(null);
+
+  const [editForm, setEditForm] = useState({
+    plate: "",
+    vehicleTypeId: ""
+  });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -47,6 +54,66 @@ export default function TrucksPage() {
       ...form,
       [e.target.name]: e.target.value
     });
+  };
+
+  const openEdit = (truck) => {
+    setEditingTruck(truck);
+    setEditForm({
+      plate: truck.plate || "",
+      vehicleTypeId: truck.vehicleTypeId || ""
+    });
+  };
+
+  const handleEditChange = (e) => {
+    setEditForm({
+      ...editForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    if (!editForm.plate.trim()) {
+      alert("Debe ingresar la patente.");
+      return;
+    }
+
+    if (!editForm.vehicleTypeId) {
+      alert("Debe seleccionar un tipo de vehículo.");
+      return;
+    }
+
+    try {
+      await updateTruck(editingTruck.id, editForm);
+      setEditingTruck(null);
+      await loadData();
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Error al actualizar el camión."
+      );
+    }
+  };
+
+  const handleDelete = async (truck) => {
+    const confirmed = window.confirm(
+      `¿Eliminar el camión ${truck.plate}? Esta acción no se puede deshacer desde la pantalla.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteTruck(truck.id);
+      await loadData();
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Error al eliminar el camión."
+      );
+    }
   };
 
   const openDocuments = async (truck) => {
@@ -188,6 +255,7 @@ export default function TrucksPage() {
               <th className="p-4 text-left">Patente</th>
               <th className="p-4 text-left">Tipo</th>
               <th className="p-4 text-left">Documentación</th>
+              <th className="p-4 text-left">Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -203,11 +271,76 @@ export default function TrucksPage() {
                     Documentos
                   </button>
                 </td>
+                <td className="p-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEdit(truck)}
+                      className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded-lg"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(truck)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* MODAL DE EDICIÓN */}
+      {editingTruck && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">Editar camión</h2>
+
+            <form onSubmit={handleUpdate} className="flex flex-col gap-3">
+              <input
+                name="plate"
+                placeholder="Patente"
+                value={editForm.plate}
+                onChange={handleEditChange}
+                className="border rounded-lg px-3 py-2"
+              />
+
+              <select
+                name="vehicleTypeId"
+                value={editForm.vehicleTypeId}
+                onChange={handleEditChange}
+                className="border rounded-lg px-3 py-2"
+              >
+                <option value="">Tipo Vehículo</option>
+                {vehicleTypes.map((vehicleType) => (
+                  <option key={vehicleType.id} value={vehicleType.id}>
+                    {vehicleType.name}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingTruck(null)}
+                  className="px-4 py-2 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL DE DOCUMENTACIÓN (Misma UI limpia y sticky que en Drivers) */}
       {selectedTruck && (
