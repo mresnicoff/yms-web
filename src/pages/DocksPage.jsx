@@ -234,7 +234,7 @@ const [
     setSelectedDockId("");
 
     alert(
-      "Dock asignado correctamente"
+      "Dock asignado correctamente. WSP enviado al chofer"
     );
 
   } catch (error) {

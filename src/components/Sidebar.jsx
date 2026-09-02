@@ -133,7 +133,8 @@ export default function Sidebar() {
         )}
 
         {(user?.role === "ADMIN" ||
-          user?.role === "YARD_OPERATOR") && (
+          user?.role === "YARD_OPERATOR" ||
+          user?.role === "PLANNER") && (
           <>
             <Link
               to="/queue"
@@ -143,6 +144,28 @@ export default function Sidebar() {
             >
               Queue
             </Link>
+                        <Link
+              to="/wsp"
+              className="
+                hover:text-blue-600
+              "
+            >
+              Levantar WSP
+            </Link>
+            
+            <Link
+              to="/docTypes"
+              className="
+                hover:text-blue-600
+              "
+            >
+             Exigencias de documentos
+            </Link>
+            <Link
+  to="/document-types"
+>
+  Tipos de documentos
+</Link>
 
             <Link
               to="/docks"

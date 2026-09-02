@@ -2,6 +2,7 @@ import {
   useEffect,
   useState
 } from "react";
+import {validateCheckIn} from "../services/documentValidationService";
 import {
   assignDock
 } from "../services/dockOperationService";
@@ -101,6 +102,72 @@ const handleCheckIn =
   async () => {
 
     try {
+      const validation =
+  await validateCheckIn({
+
+    driverId:
+      selectedDriverId,
+
+    truckId:
+      selectedTruckId,
+
+    operationType:
+      selectedAppointment
+        .operationType
+
+  });
+
+if (!validation.valid) {
+
+  let message =
+    "❌ Documentación inválida\n\n";
+
+  if (
+    validation.missingDocuments
+      .length > 0
+  ) {
+
+    message +=
+      "Faltantes:\n";
+
+    validation
+      .missingDocuments
+      .forEach(doc => {
+
+        message +=
+          `• ${doc}\n`;
+
+      });
+
+    message += "\n";
+
+  }
+
+  if (
+    validation.expiredDocuments
+      .length > 0
+  ) {
+
+    message +=
+      "Vencidos:\n";
+
+    validation
+      .expiredDocuments
+      .forEach(doc => {
+
+        message +=
+          `• ${doc}\n`;
+
+      });
+
+  }
+
+  alert(message);
+
+  return;
+
+}
+
 
       const checkIn =
         await createCheckIn({
