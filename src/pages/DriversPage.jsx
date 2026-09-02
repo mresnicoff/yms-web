@@ -59,11 +59,6 @@ export default function DriversPage() {
     setExpirationDate
   ] = useState("");
 
-  const [
-    fileUrl,
-    setFileUrl
-  ] = useState("");
-
   const [form, setForm] =
     useState({
       firstName: "",
@@ -154,7 +149,6 @@ export default function DriversPage() {
         ),
         getDocumentTypes()
       ]);
-      console.log("DOCUMENT TYPES", types);
 
       setDocuments(
         docs
@@ -197,11 +191,6 @@ const handleAddDocument =
           await uploadDocument(
             formData
           );
-
-        console.log(
-          "UPLOAD RESPONSE",
-          upload
-        );
 
         uploadedUrl =
           upload.url;
@@ -247,17 +236,9 @@ const handleAddDocument =
 
     } catch (error) {
 
-  console.log("ERROR COMPLETO", error);
-
-  console.log(
-    "BACK RESPONSE",
-    error.response?.data
-  );
-
   alert(
-    JSON.stringify(
-      error.response?.data
-    )
+    error.response?.data?.message ||
+    "Error al subir el documento."
   );
 
 }

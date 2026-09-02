@@ -49,7 +49,6 @@ export default function DocumentTypesPage() {
 
 const handleCreate = async () => {
     try {
-      console.log("Creating document type with code:", code, "and name:", name);
       await createDocumentType({
         code,
         name

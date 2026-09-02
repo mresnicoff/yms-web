@@ -76,7 +76,6 @@ export default function TrucksPage() {
         formData.append("file", selectedFile);
 
         const upload = await uploadDocument(formData);
-        console.log("UPLOAD RESPONSE", upload);
 
         uploadedUrl = upload.url;
       }
