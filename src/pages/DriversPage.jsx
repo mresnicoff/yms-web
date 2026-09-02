@@ -104,16 +104,37 @@ export default function DriversPage() {
 
       e.preventDefault();
 
-      await createDriver({...form,licenseNumber: "SI"});
+      if (!form.firstName.trim() || !form.phone.trim()) {
 
-      setForm({
-        firstName: "",
-        lastName: "",
-        phone: "",
-        licenseNumber: ""
-      });
+        alert(
+          "Debe completar al menos nombre y teléfono."
+        );
 
-      await loadDrivers();
+        return;
+
+      }
+
+      try {
+
+        await createDriver(form);
+
+        setForm({
+          firstName: "",
+          lastName: "",
+          phone: "",
+          licenseNumber: ""
+        });
+
+        await loadDrivers();
+
+      } catch (error) {
+
+        alert(
+          error.response?.data?.message ||
+          "Error al crear el chofer."
+        );
+
+      }
 
     };
 

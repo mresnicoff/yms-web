@@ -1,11 +1,13 @@
 import axios from "axios";
 
-// Leemos la URL base de las variables de entorno (con un fallback por si no existe)
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"; 
-// Nota: Si usás Create React App cambia por: process.env.REACT_APP_API_URL
+// En producción (Vercel) se define VITE_API_URL apuntando al backend
+// desplegado, incluyendo el prefijo /api. En desarrollo local, si no está
+// seteada, usa localhost:3000/api.
+const baseURL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 const api = axios.create({
-  baseURL: `${BASE_URL}/api`
+  baseURL
 });
 
 api.interceptors.request.use((config) => {

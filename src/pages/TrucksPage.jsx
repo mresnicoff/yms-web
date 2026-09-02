@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import MainLayout from "../layouts/MainLayout";
 import { getVehicleTypes } from "../services/catalogService";
 import { getTrucks, createTruck } from "../services/truckService";
@@ -7,12 +6,11 @@ import {
   getTruckDocuments,
   createDocument,
   deleteDocument,
-  uploadDocument // 👈 Importante: Usamos la misma función de subida previa
+  uploadDocument
 } from "../services/documentService";
 import { getDocumentTypes } from "../services/documentTypeService";
 
 export default function TrucksPage() {
-  const { user } = useAuth();
 
   const [trucks, setTrucks] = useState([]);
   const [vehicleTypes, setVehicleTypes] = useState([]);
@@ -32,7 +30,6 @@ export default function TrucksPage() {
 
   useEffect(() => {
     loadData();
-    console.log(user);
   }, []);
 
   const loadData = async () => {
@@ -50,23 +47,6 @@ export default function TrucksPage() {
       ...form,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!form.vehicleTypeId) {
-      alert("Debe seleccionar un tipo de vehículo.");
-      return;
-    }
-
-    await createTruck(form);
-    setForm({
-      plate: "",
-      vehicleTypeId: ""
-    });
-
-    await loadData();
   };
 
   const openDocuments = async (truck) => {
@@ -119,9 +99,10 @@ export default function TrucksPage() {
       setExpirationDate("");
       setSelectedFile(null);
     } catch (error) {
-      console.log("ERROR COMPLETO", error);
-      console.log("BACK RESPONSE", error.response?.data);
-      alert(JSON.stringify(error.response?.data));
+      alert(
+        error.response?.data?.message ||
+        "Error al subir el documento."
+      );
     }
   };
 
@@ -129,6 +110,36 @@ export default function TrucksPage() {
     await deleteDocument(id);
     const docs = await getTruckDocuments(selectedTruck.id);
     setDocuments(docs);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.plate.trim()) {
+      alert("Debe ingresar la patente.");
+      return;
+    }
+
+    if (!form.vehicleTypeId) {
+      alert("Debe seleccionar un tipo de vehículo.");
+      return;
+    }
+
+    try {
+      await createTruck(form);
+
+      setForm({
+        plate: "",
+        vehicleTypeId: ""
+      });
+
+      await loadData();
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Error al crear el camión."
+      );
+    }
   };
 
   return (

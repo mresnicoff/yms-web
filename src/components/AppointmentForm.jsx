@@ -34,6 +34,9 @@ export default function AppointmentForm({
     setAvailableSlots] =
     useState([]);
 
+  const [formError, setFormError] =
+    useState("");
+
 const [form, setForm] =
   useState({
     supplierId: "",
@@ -147,6 +150,8 @@ const [form, setForm] =
   e
 ) => {
 
+  setFormError("");
+
   if (
     e.target.name ===
     "dockGroupId"
@@ -201,21 +206,45 @@ const [form, setForm] =
 
 };
 
+  const requiredFields = [
+    {
+      key: "supplierId",
+      label: "Proveedor",
+      // El proveedor se completa automáticamente para usuarios SUPPLIER
+      skip: isSupplier
+    },
+    { key: "vehicleTypeId", label: "Tipo de vehículo" },
+    { key: "warehouseId", label: "Depósito" },
+    { key: "dockGroupId", label: "Dock Group" },
+    { key: "operationType", label: "Operación (elegí un Dock Group)" },
+    { key: "date", label: "Fecha" },
+    { key: "startTime", label: "Horario (elegí un slot disponible)" }
+  ];
+
   const handleSubmit = (
     e
   ) => {
 
     e.preventDefault();
 
-    if (!form.startTime) {
+    const missing = requiredFields
+      .filter(
+        (field) =>
+          !field.skip && !form[field.key]
+      )
+      .map((field) => field.label);
 
-      alert(
-        "Seleccionar un horario"
+    if (missing.length > 0) {
+
+      setFormError(
+        `Faltan completar los siguientes campos: ${missing.join(", ")}`
       );
 
       return;
 
     }
+
+    setFormError("");
 
     onSubmit(form);
 
@@ -242,6 +271,26 @@ const [form, setForm] =
       >
         Nuevo Turno
       </h2>
+
+      {formError && (
+
+        <div
+          className="
+            mb-4
+            rounded-lg
+            border
+            border-red-200
+            bg-red-50
+            px-3
+            py-2
+            text-sm
+            text-red-700
+          "
+        >
+          {formError}
+        </div>
+
+      )}
 
       <form
         onSubmit={handleSubmit}

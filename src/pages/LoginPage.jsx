@@ -53,16 +53,6 @@ export default function LoginPage() {
         error
       );
 
-      console.log(
-        "Response:",
-        error.response
-      );
-
-      console.log(
-        "Data:",
-        error.response?.data
-      );
-
       setError(
         error.response?.data?.message ||
         error.message ||
