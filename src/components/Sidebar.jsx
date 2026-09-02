@@ -144,15 +144,6 @@ export default function Sidebar() {
             >
               Queue
             </Link>
-                        <Link
-              to="/wsp"
-              className="
-                hover:text-blue-600
-              "
-            >
-              Levantar WSP
-            </Link>
-            
             <Link
               to="/docTypes"
               className="

@@ -16,7 +16,6 @@ import DriversPage from "../pages/DriversPage";
 import ProtectedRoute
   from "./ProtectedRoute";
 import DocumentRulesPage from "../pages/DocumentRulesPage";
-import WhatsAppSetupPage from "../pages/WhatsAppSetupPage";
 export default function AppRouter() {
 
   return (
@@ -50,14 +49,6 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/wsp"
-          element={
-            <ProtectedRoute>
-              <WhatsAppSetupPage />
             </ProtectedRoute>
           }
         />
