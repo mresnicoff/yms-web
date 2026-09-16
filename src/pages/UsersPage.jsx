@@ -14,6 +14,15 @@ import {
   resetUserPassword
 } from "../services/userService";
 
+import {
+  getSuppliers,
+  createSupplier
+} from "../services/catalogService";
+
+const SUPPLIER_ROLE_CODE = "SUPPLIER";
+
+const NEW_SUPPLIER_OPTION = "__NEW__";
+
 const ESTADOS = [
   "ACTIVE",
   "INACTIVE",
@@ -34,13 +43,24 @@ export default function UsersPage() {
   const [roles, setRoles] =
     useState([]);
 
+  const [suppliers, setSuppliers] =
+    useState([]);
+
   const [form, setForm] =
     useState({
       firstName: "",
       lastName: "",
       email: "",
       password: "",
-      roleId: ""
+      roleId: "",
+      supplierId: ""
+    });
+
+  const [newSupplier, setNewSupplier] =
+    useState({
+      name: "",
+      taxId: "",
+      email: ""
     });
 
   const [editingUser, setEditingUser] =
@@ -52,7 +72,15 @@ export default function UsersPage() {
       lastName: "",
       email: "",
       roleId: "",
-      status: "ACTIVE"
+      status: "ACTIVE",
+      supplierId: ""
+    });
+
+  const [editNewSupplier, setEditNewSupplier] =
+    useState({
+      name: "",
+      taxId: "",
+      email: ""
     });
 
   const [resettingUser, setResettingUser] =
@@ -73,15 +101,18 @@ export default function UsersPage() {
   const loadData =
     async () => {
 
-      const [usersData, rolesData] =
+      const [usersData, rolesData, suppliersData] =
         await Promise.all([
           getUsers(),
-          getRoles()
+          getRoles(),
+          getSuppliers()
         ]);
 
       setUsers(usersData);
 
       setRoles(rolesData);
+
+      setSuppliers(suppliersData);
 
       if (rolesData.length > 0) {
 
@@ -94,11 +125,71 @@ export default function UsersPage() {
 
     };
 
+  const isSupplierRole =
+    (roleId) => {
+
+      const role = roles.find(
+        (r) => r.id === roleId
+      );
+
+      return role?.code === SUPPLIER_ROLE_CODE;
+
+    };
+
+  // Si el rol elegido es Proveedor, resuelve el supplierId a usar:
+  // si se eligió "crear proveedor nuevo", lo crea primero y devuelve
+  // su id; si se eligió uno existente, devuelve ese id tal cual.
+  const resolveSupplierIdForSubmit =
+    async (supplierIdValue, newSupplierData) => {
+
+      if (supplierIdValue === NEW_SUPPLIER_OPTION) {
+
+        if (!newSupplierData.name.trim() || !newSupplierData.taxId.trim()) {
+
+          throw new Error(
+            "Para crear un proveedor nuevo hay que completar nombre y CUIT."
+          );
+
+        }
+
+        const created = await createSupplier({
+          name: newSupplierData.name.trim(),
+          taxId: newSupplierData.taxId.trim(),
+          email: newSupplierData.email.trim() || undefined
+        });
+
+        return created.id;
+
+      }
+
+      if (!supplierIdValue) {
+
+        throw new Error(
+          "Para el rol Proveedor hay que seleccionar o crear un proveedor."
+        );
+
+      }
+
+      return supplierIdValue;
+
+    };
+
   const handleChange =
     (e) => {
 
       setForm({
         ...form,
+        [e.target.name]:
+          e.target.value
+      });
+
+    };
+
+  const handleNewSupplierChange =
+    (e) => {
+
+      setNewSupplier({
+        ...newSupplier,
         [e.target.name]:
           e.target.value
       });
@@ -138,14 +229,35 @@ export default function UsersPage() {
 
       try {
 
-        await createUser(form);
+        let supplierId;
+
+        if (isSupplierRole(form.roleId)) {
+
+          supplierId = await resolveSupplierIdForSubmit(
+            form.supplierId,
+            newSupplier
+          );
+
+        }
+
+        await createUser({
+          ...form,
+          supplierId
+        });
 
         setForm({
           firstName: "",
           lastName: "",
           email: "",
           password: "",
-          roleId: roles[0]?.id || ""
+          roleId: roles[0]?.id || "",
+          supplierId: ""
+        });
+
+        setNewSupplier({
+          name: "",
+          taxId: "",
+          email: ""
         });
 
         await loadData();
@@ -154,6 +266,7 @@ export default function UsersPage() {
 
         alert(
           error.response?.data?.message ||
+          error.message ||
           "Error al crear el usuario."
         );
 
@@ -171,7 +284,14 @@ export default function UsersPage() {
         lastName: user.lastName || "",
         email: user.email || "",
         roleId: user.roleId || "",
-        status: user.status || "ACTIVE"
+        status: user.status || "ACTIVE",
+        supplierId: user.supplierId || ""
+      });
+
+      setEditNewSupplier({
+        name: "",
+        taxId: "",
+        email: ""
       });
 
     };
@@ -181,6 +301,17 @@ export default function UsersPage() {
 
       setEditForm({
         ...editForm,
+        [e.target.name]:
+          e.target.value
+      });
+
+    };
+
+  const handleEditNewSupplierChange =
+    (e) => {
+
+      setEditNewSupplier({
+        ...editNewSupplier,
         [e.target.name]:
           e.target.value
       });
@@ -209,9 +340,23 @@ export default function UsersPage() {
 
       try {
 
+        let supplierId;
+
+        if (isSupplierRole(editForm.roleId)) {
+
+          supplierId = await resolveSupplierIdForSubmit(
+            editForm.supplierId,
+            editNewSupplier
+          );
+
+        }
+
         await updateUser(
           editingUser.id,
-          editForm
+          {
+            ...editForm,
+            supplierId
+          }
         );
 
         setEditingUser(null);
@@ -222,6 +367,7 @@ export default function UsersPage() {
 
         alert(
           error.response?.data?.message ||
+          error.message ||
           "Error al actualizar el usuario."
         );
 
@@ -391,6 +537,82 @@ export default function UsersPage() {
 
         </select>
 
+        {isSupplierRole(form.roleId) && (
+
+          <div
+            className="
+              w-full
+              flex
+              gap-4
+              flex-wrap
+              items-start
+              bg-slate-50
+              border
+              rounded-lg
+              p-4
+            "
+          >
+
+            <select
+              name="supplierId"
+              value={form.supplierId}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2"
+            >
+
+              <option value="">
+                -- Seleccionar proveedor --
+              </option>
+
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </option>
+              ))}
+
+              <option value={NEW_SUPPLIER_OPTION}>
+                ➕ Crear proveedor nuevo
+              </option>
+
+            </select>
+
+            {form.supplierId === NEW_SUPPLIER_OPTION && (
+
+              <>
+
+                <input
+                  name="name"
+                  placeholder="Nombre del proveedor"
+                  value={newSupplier.name}
+                  onChange={handleNewSupplierChange}
+                  className="border rounded-lg px-3 py-2"
+                />
+
+                <input
+                  name="taxId"
+                  placeholder="CUIT / Tax ID"
+                  value={newSupplier.taxId}
+                  onChange={handleNewSupplierChange}
+                  className="border rounded-lg px-3 py-2"
+                />
+
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email del proveedor (opcional)"
+                  value={newSupplier.email}
+                  onChange={handleNewSupplierChange}
+                  className="border rounded-lg px-3 py-2"
+                />
+
+              </>
+
+            )}
+
+          </div>
+
+        )}
+
         <button
           type="submit"
           className="
@@ -434,6 +656,10 @@ export default function UsersPage() {
               </th>
 
               <th className="p-4 text-left">
+                Proveedor
+              </th>
+
+              <th className="p-4 text-left">
                 Estado
               </th>
 
@@ -464,6 +690,10 @@ export default function UsersPage() {
 
                 <td className="p-4">
                   {user.role?.name}
+                </td>
+
+                <td className="p-4">
+                  {user.supplier?.name || "-"}
                 </td>
 
                 <td className="p-4">
@@ -593,6 +823,80 @@ export default function UsersPage() {
                 ))}
 
               </select>
+
+              {isSupplierRole(editForm.roleId) && (
+
+                <div
+                  className="
+                    flex
+                    flex-col
+                    gap-3
+                    bg-slate-50
+                    border
+                    rounded-lg
+                    p-4
+                  "
+                >
+
+                  <select
+                    name="supplierId"
+                    value={editForm.supplierId}
+                    onChange={handleEditChange}
+                    className="border rounded-lg px-3 py-2"
+                  >
+
+                    <option value="">
+                      -- Seleccionar proveedor --
+                    </option>
+
+                    {suppliers.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+
+                    <option value={NEW_SUPPLIER_OPTION}>
+                      ➕ Crear proveedor nuevo
+                    </option>
+
+                  </select>
+
+                  {editForm.supplierId === NEW_SUPPLIER_OPTION && (
+
+                    <>
+
+                      <input
+                        name="name"
+                        placeholder="Nombre del proveedor"
+                        value={editNewSupplier.name}
+                        onChange={handleEditNewSupplierChange}
+                        className="border rounded-lg px-3 py-2"
+                      />
+
+                      <input
+                        name="taxId"
+                        placeholder="CUIT / Tax ID"
+                        value={editNewSupplier.taxId}
+                        onChange={handleEditNewSupplierChange}
+                        className="border rounded-lg px-3 py-2"
+                      />
+
+                      <input
+                        name="email"
+                        type="email"
+                        placeholder="Email del proveedor (opcional)"
+                        value={editNewSupplier.email}
+                        onChange={handleEditNewSupplierChange}
+                        className="border rounded-lg px-3 py-2"
+                      />
+
+                    </>
+
+                  )}
+
+                </div>
+
+              )}
 
               <div className="flex justify-end gap-2 mt-2">
 

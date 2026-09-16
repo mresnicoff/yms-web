@@ -5,6 +5,11 @@ export const getSuppliers = async () => {
   return data;
 };
 
+export const createSupplier = async (payload) => {
+  const { data } = await api.post("/suppliers", payload);
+  return data;
+};
+
 export const getVehicleTypes = async () => {
   const { data } = await api.get("/vehicle-types");
   return data;
