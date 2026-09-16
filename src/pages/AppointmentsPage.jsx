@@ -97,7 +97,7 @@ export default function AppointmentsPage() {
             font-bold
           "
         >
-          Appointments
+          Turnos
         </h1>
 
       </div>

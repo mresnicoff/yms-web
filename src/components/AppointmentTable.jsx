@@ -1,3 +1,5 @@
+import { OPERATION_TYPE_LABEL } from "../utils/operationType";
+
 function getStatusColor(status) {
 
   switch (status) {
@@ -97,7 +99,13 @@ export default function AppointmentTable({
 
                   {new Date(
                     appointment.startTime
-                  ).toLocaleDateString()}
+                  ).toLocaleDateString(
+                    [],
+                    {
+                      timeZone:
+                        "America/Argentina/Buenos_Aires"
+                    }
+                  )}
 
                 </td>
 
@@ -109,7 +117,9 @@ export default function AppointmentTable({
                     [],
                     {
                       hour: "2-digit",
-                      minute: "2-digit"
+                      minute: "2-digit",
+                      timeZone:
+                        "America/Argentina/Buenos_Aires"
                     }
                   )}
 
@@ -127,7 +137,9 @@ export default function AppointmentTable({
                 <td className="p-4">
 
                   {
-                    appointment.operationType
+                    OPERATION_TYPE_LABEL[
+                      appointment.operationType
+                    ] || appointment.operationType
                   }
 
                 </td>

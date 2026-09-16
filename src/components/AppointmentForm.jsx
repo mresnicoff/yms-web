@@ -9,6 +9,9 @@ import {
   getAvailability
 } from "../services/catalogService";
 
+import { OPERATION_TYPE_OPTIONS } from "../utils/operationType";
+import { getBuenosAiresToday } from "../utils/buenosAiresTime";
+
 export default function AppointmentForm({
   onSubmit
 }) {
@@ -57,6 +60,7 @@ const [form, setForm] =
     if (
       !form.dockGroupId ||
       !form.vehicleTypeId ||
+      !form.operationType ||
       !form.date
     ) {
 
@@ -152,52 +156,6 @@ const [form, setForm] =
 
   setFormError("");
 
-  if (
-    e.target.name ===
-    "dockGroupId"
-  ) {
-
-    const selectedGroup =
-      dockGroups.find(
-        group =>
-          group.id ===
-          e.target.value
-      );
-
-    let operationType =
-      "";
-
-    if (
-      selectedGroup?.code ===
-      "PT"
-    ) {
-
-      operationType =
-        "LOAD";
-
-    }
-
-    if (
-      selectedGroup?.code ===
-      "MP"
-    ) {
-
-      operationType =
-        "UNLOAD";
-
-    }
-
-    setForm({
-      ...form,
-      dockGroupId:
-        e.target.value,
-      operationType
-    });
-
-    return;
-
-  }
-
   setForm({
     ...form,
     [e.target.name]:
@@ -214,9 +172,9 @@ const [form, setForm] =
       skip: isSupplier
     },
     { key: "vehicleTypeId", label: "Tipo de vehículo" },
-    { key: "warehouseId", label: "Depósito" },
-    { key: "dockGroupId", label: "Dock Group" },
-    { key: "operationType", label: "Operación (elegí un Dock Group)" },
+    { key: "warehouseId", label: "Warehouse" },
+    { key: "operationType", label: "Tipo de operación" },
+    { key: "dockGroupId", label: "Tipo de dock" },
     { key: "date", label: "Fecha" },
     { key: "startTime", label: "Horario (elegí un slot disponible)" }
   ];
@@ -388,7 +346,7 @@ const [form, setForm] =
           "
         >
           <option value="">
-            Warehouse
+            Seleccione warehouse
           </option>
 
           {warehouses.map(
@@ -398,6 +356,33 @@ const [form, setForm] =
                 value={warehouse.id}
               >
                 {warehouse.name}
+              </option>
+            )
+          )}
+        </select>
+
+        <select
+          name="operationType"
+          value={form.operationType}
+          onChange={handleChange}
+          className="
+            border
+            rounded-lg
+            px-3
+            py-2
+          "
+        >
+          <option value="">
+            Seleccione tipo de operación
+          </option>
+
+          {OPERATION_TYPE_OPTIONS.map(
+            (option) => (
+              <option
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
               </option>
             )
           )}
@@ -415,7 +400,7 @@ const [form, setForm] =
           "
         >
           <option value="">
-            Dock Group
+            Seleccione tipo de dock
           </option>
 
           {dockGroups.map(
@@ -424,38 +409,18 @@ const [form, setForm] =
                 key={group.id}
                 value={group.id}
               >
-                {group.code} - {group.name}
+                {group.name}
               </option>
             )
           )}
         </select>
-
-<div
-  className="
-    border
-    rounded-lg
-    px-3
-    py-2
-    bg-slate-50
-  "
->
-
-  {form.operationType
-    ? `Operación: ${form.operationType}`
-    : "Seleccionar Dock Group"}
-
-</div>
 
         <input
           type="date"
           name="date"
           value={form.date}
           onChange={handleChange}
-          min={
-            new Date()
-              .toISOString()
-              .split("T")[0]
-          }
+          min={getBuenosAiresToday()}
           className="
             border
             rounded-lg
@@ -531,7 +496,9 @@ const [form, setForm] =
                         [],
                         {
                           hour: "2-digit",
-                          minute: "2-digit"
+                          minute: "2-digit",
+                          timeZone:
+                            "America/Argentina/Buenos_Aires"
                         }
                       )}
 
@@ -556,9 +523,9 @@ const [form, setForm] =
                   text-slate-500
                 "
               >
-                Seleccionar vehículo,
-                dock group y fecha para
-                consultar disponibilidad.
+                Seleccionar vehículo, tipo de
+                operación, tipo de dock y fecha
+                para consultar disponibilidad.
               </div>
 
             )}

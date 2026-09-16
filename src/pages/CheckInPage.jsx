@@ -386,12 +386,12 @@ else {
               <div>
 
                 <strong>
-                  Dock Group:
+                  Tipo de dock:
                 </strong>{" "}
 
                 {
                   selectedAppointment
-                    .dockGroup?.code
+                    .dockGroup?.name
                 }
 
               </div>

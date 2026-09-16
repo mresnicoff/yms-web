@@ -95,7 +95,7 @@ export default function Sidebar() {
               hover:text-blue-600
             "
           >
-            Appointments
+            Turnos
           </Link>
           <Link
   to="/trucks"
