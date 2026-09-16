@@ -14,6 +14,7 @@ import TrucksPage from "../pages/TrucksPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import DriversPage from "../pages/DriversPage";
 import UsersPage from "../pages/UsersPage";
+import WarehousesPage from "../pages/WarehousesPage";
 import ProtectedRoute
   from "./ProtectedRoute";
 import DocumentRulesPage from "../pages/DocumentRulesPage";
@@ -123,6 +124,14 @@ export default function AppRouter() {
   element={
     <ProtectedRoute roles={["ADMIN"]}>
       <UsersPage />
+    </ProtectedRoute>
+  }
+/>
+        <Route
+  path="/warehouses"
+  element={
+    <ProtectedRoute roles={["ADMIN"]}>
+      <WarehousesPage />
     </ProtectedRoute>
   }
 />
