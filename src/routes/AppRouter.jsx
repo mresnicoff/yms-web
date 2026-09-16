@@ -13,6 +13,7 @@ import DocksPage from "../pages/DocksPage";
 import TrucksPage from "../pages/TrucksPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import DriversPage from "../pages/DriversPage";
+import UsersPage from "../pages/UsersPage";
 import ProtectedRoute
   from "./ProtectedRoute";
 import DocumentRulesPage from "../pages/DocumentRulesPage";
@@ -117,7 +118,15 @@ export default function AppRouter() {
     </ProtectedRoute>
   }
 />
-        
+        <Route
+  path="/users"
+  element={
+    <ProtectedRoute roles={["ADMIN"]}>
+      <UsersPage />
+    </ProtectedRoute>
+  }
+/>
+
 
       </Routes>
 

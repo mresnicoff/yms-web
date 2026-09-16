@@ -7,7 +7,8 @@ import {
 } from "../context/AuthContext";
 
 export default function ProtectedRoute({
-  children
+  children,
+  roles
 }) {
 
   const {
@@ -26,6 +27,17 @@ export default function ProtectedRoute({
   if (!user) {
     return (
       <Navigate to="/" />
+    );
+  }
+
+  // Si la ruta exige roles específicos y el usuario logueado no tiene
+  // ninguno de ellos, lo mandamos al dashboard en vez de mostrarle la
+  // pantalla. Esto es lo que faltaba: antes los roles solo ocultaban
+  // links en el menú, pero cualquier usuario logueado podía entrar a
+  // una pantalla escribiendo la URL directamente.
+  if (roles && roles.length > 0 && !roles.includes(user?.role)) {
+    return (
+      <Navigate to="/dashboard" />
     );
   }
 

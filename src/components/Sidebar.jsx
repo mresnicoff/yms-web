@@ -180,6 +180,17 @@ export default function Sidebar() {
           </Link>
         )}
 
+        {user?.role === "ADMIN" && (
+          <Link
+            to="/users"
+            className="
+              hover:text-blue-600
+            "
+          >
+            Usuarios
+          </Link>
+        )}
+
         <button
           onClick={handleLogout}
           className="
