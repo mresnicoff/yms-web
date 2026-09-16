@@ -210,7 +210,7 @@ export default function TrucksPage() {
 
   return (
     <MainLayout>
-      <h1 className="text-3xl font-bold mb-6">Trucks</h1>
+      <h1 className="text-3xl font-bold mb-6">Vehículo</h1>
 
       {/* Formulario de creación de Truck */}
       <form

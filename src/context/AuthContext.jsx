@@ -29,7 +29,7 @@ export function AuthProvider({
 
       setLoading(false);
 
-      return;
+      return null;
     }
 
     try {
@@ -39,6 +39,8 @@ export function AuthProvider({
 
       setUser(response.data);
 
+      return response.data;
+
     } catch {
 
       localStorage.removeItem(
@@ -46,6 +48,8 @@ export function AuthProvider({
       );
 
       setUser(null);
+
+      return null;
 
     } finally {
 

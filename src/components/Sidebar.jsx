@@ -24,6 +24,8 @@ export default function Sidebar() {
 
   };
 
+  const role = user?.role;
+
   return (
     <aside
       className="
@@ -77,126 +79,116 @@ export default function Sidebar() {
         "
       >
 
-        <Link
-          to="/dashboard"
-          className="
-            hover:text-blue-600
-          "
-        >
-          Dashboard
-        </Link>
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "YARD_OPERATOR") && (
+          <Link
+            to="/dashboard"
+            className="hover:text-blue-600"
+          >
+            Dashboard
+          </Link>
+        )}
 
-        {(user?.role === "ADMIN" ||
-          user?.role === "PLANNER" ||
-          user?.role === "SUPPLIER") && (<>
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "SUPPLIER") && (
           <Link
             to="/appointments"
-            className="
-              hover:text-blue-600
-            "
+            className="hover:text-blue-600"
           >
             Turnos
           </Link>
-          <Link
-  to="/trucks"
-  className="
-    hover:text-blue-600
-  "
->
-  Trucks
-</Link>
-<Link
-  to="/checkout"
->
-  Check-Out
-</Link>
-<Link
-  to="/drivers"
->
-  Drivers
-</Link>
-</>
         )}
 
-        {(user?.role === "ADMIN" ||
- user?.role === "GATE_OPERATOR" ||
- user?.role === "PLANNER") && (
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "GATE_OPERATOR") && (
+          <Link
+            to="/trucks"
+            className="hover:text-blue-600"
+          >
+            Vehículo
+          </Link>
+        )}
+
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "GATE_OPERATOR" ||
+          role === "YARD_OPERATOR") && (
+          <Link
+            to="/checkout"
+            className="hover:text-blue-600"
+          >
+            Check-Out
+          </Link>
+        )}
+
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "GATE_OPERATOR") && (
+          <Link
+            to="/drivers"
+            className="hover:text-blue-600"
+          >
+            Choferes
+          </Link>
+        )}
+
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "GATE_OPERATOR") && (
           <Link
             to="/checkin"
-            className="
-              hover:text-blue-600
-            "
+            className="hover:text-blue-600"
           >
             Check-In
           </Link>
-          
         )}
 
-        {(user?.role === "ADMIN" ||
-          user?.role === "YARD_OPERATOR" ||
-          user?.role === "PLANNER") && (
+        {(role === "ADMIN" ||
+          role === "PLANNER") && (
           <>
             <Link
-              to="/queue"
-              className="
-                hover:text-blue-600
-              "
-            >
-              Queue
-            </Link>
-            <Link
               to="/docTypes"
-              className="
-                hover:text-blue-600
-              "
+              className="hover:text-blue-600"
             >
-             Exigencias de documentos
+              Exigencias de documentos
             </Link>
-            <Link
-  to="/document-types"
->
-  Tipos de documentos
-</Link>
 
             <Link
-              to="/docks"
-              className="
-                hover:text-blue-600
-              "
+              to="/document-types"
+              className="hover:text-blue-600"
             >
-              Docks
+              Tipos de documentos
             </Link>
           </>
         )}
 
-        {user?.role === "ADMIN" && (
+        {(role === "ADMIN" ||
+          role === "PLANNER" ||
+          role === "YARD_OPERATOR") && (
           <Link
-            to="/suppliers"
-            className="
-              hover:text-blue-600
-            "
+            to="/docks"
+            className="hover:text-blue-600"
           >
-            Suppliers
+            Docks
           </Link>
         )}
 
-        {user?.role === "ADMIN" && (
+        {role === "ADMIN" && (
           <Link
             to="/users"
-            className="
-              hover:text-blue-600
-            "
+            className="hover:text-blue-600"
           >
             Usuarios
           </Link>
         )}
 
-        {user?.role === "ADMIN" && (
+        {role === "ADMIN" && (
           <Link
             to="/warehouses"
-            className="
-              hover:text-blue-600
-            "
+            className="hover:text-blue-600"
           >
             Warehouses
           </Link>

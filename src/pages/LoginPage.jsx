@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
+import { getHomeRouteForRole } from "../utils/roleHomeRoute";
+
 import api from "../api/axios";
 
 import Input from "../components/Input";
@@ -42,9 +44,9 @@ export default function LoginPage() {
         response.data.token
       );
 
-      await loadUser();
+      const loggedInUser = await loadUser();
 
-      navigate("/dashboard");
+      navigate(getHomeRouteForRole(loggedInUser?.role));
 
     } catch (error) {
 
