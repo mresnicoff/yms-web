@@ -13,6 +13,19 @@ import {
   finishDockOperation
 } from "../services/dockOperationService";
 
+import {
+  createAtraco
+} from "../services/atracoService";
+
+const emptyAtracoForm = {
+  cunasColocadas: "0",
+  llavesOk: true,
+  clienteFinal: "",
+  receptor: "",
+  auditor: "",
+  cargador: ""
+};
+
 export default function CheckoutPage() {
   const [
   selectedOperation,
@@ -38,6 +51,11 @@ const [
     operations,
     setOperations
   ] = useState([]);
+
+  const [showAtracoModal, setShowAtracoModal] = useState(false);
+  const [atracoForm, setAtracoForm] = useState(emptyAtracoForm);
+
+  const [pallets, setPallets] = useState("");
 
   useEffect(() => {
 
@@ -65,8 +83,66 @@ const [
 
     };
 
+  const needsAtraco = (operation) =>
+    Boolean(
+      operation.checkIn.appointment.externalTripId &&
+      !operation.checkIn.atraco
+    );
+
+  const isClientPalletsMode = (operation) =>
+    operation.checkIn.appointment.warehouse?.checkoutMode ===
+    "CLIENT_PALLETS";
+
+  const handleOpenAtraco = (operation) => {
+
+    setSelectedOperation(operation);
+    setAtracoForm(emptyAtracoForm);
+    setShowAtracoModal(true);
+
+  };
+
+  const handleSubmitAtraco = async () => {
+
+    try {
+
+      await createAtraco({
+        checkInId: selectedOperation.checkIn.id,
+        cunasColocadas: Number(atracoForm.cunasColocadas) || 0,
+        llavesOk: atracoForm.llavesOk,
+        clienteFinal: atracoForm.clienteFinal,
+        receptor: atracoForm.receptor,
+        auditor: atracoForm.auditor,
+        cargador: atracoForm.cargador
+      });
+
+      setShowAtracoModal(false);
+      setSelectedOperation(null);
+
+      await loadOperations();
+
+      alert("Atraco registrado correctamente");
+
+    } catch (error) {
+
+      alert(
+        error.response?.data?.message ||
+        "Error registrando el Atraco"
+      );
+
+    }
+
+  };
+
  const handleFinish =
   async (operation) => {
+
+    if (needsAtraco(operation)) {
+
+      handleOpenAtraco(operation);
+
+      return;
+
+    }
 
     if (
       operation.checkIn
@@ -86,6 +162,8 @@ const [
       setSealNumbers(
         [""]
       );
+
+      setPallets("");
 
       setShowDispatchModal(
         true
@@ -137,16 +215,27 @@ const [
 
     try {
 
-      await createDispatch({
-        dockOperationId:
-          selectedOperation.id,
-        routeSheetNumber,
-        sealNumbers:
-          sealNumbers.filter(
-            seal =>
-              seal.trim() !== ""
-          )
-      });
+      const clientPalletsMode =
+        isClientPalletsMode(selectedOperation);
+
+      await createDispatch(
+        clientPalletsMode
+          ? {
+              dockOperationId:
+                selectedOperation.id,
+              pallets: Number(pallets) || 0
+            }
+          : {
+              dockOperationId:
+                selectedOperation.id,
+              routeSheetNumber,
+              sealNumbers:
+                sealNumbers.filter(
+                  seal =>
+                    seal.trim() !== ""
+                )
+            }
+      );
 
       await finishDockOperation({
         dockOperationId:
@@ -294,16 +383,15 @@ const [
                           operation
                         )
                       }
-                      className="
-                        bg-green-600
-                        hover:bg-green-700
-                        text-white
-                        px-3
-                        py-1
-                        rounded-lg
-                      "
+                      className={
+                        needsAtraco(operation)
+                          ? "bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-lg"
+                          : "bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg"
+                      }
                     >
-                      Finalizar
+                      {needsAtraco(operation)
+                        ? "Cargar Atraco"
+                        : "Finalizar"}
                     </button>
 
                   </td>
@@ -367,86 +455,144 @@ const [
         Checkout Despacho
       </h2>
 
-      <div className="mb-4">
+      {isClientPalletsMode(selectedOperation) ? (
 
-        <label>
-          Hoja de Ruta
-        </label>
+        <>
 
-        <input
-          value={
-            routeSheetNumber
-          }
-          onChange={(e) =>
-            setRouteSheetNumber(
-              e.target.value
-            )
-          }
-          className="
-            w-full
-            border
-            rounded
-            p-2
-          "
-        />
+          <div className="mb-4">
 
-      </div>
+            <label>
+              Cliente
+            </label>
 
-      <div className="mb-4">
-
-        <label>
-          Precintos
-        </label>
-
-        {sealNumbers.map(
-          (
-            seal,
-            index
-          ) => (
-
-            <input
-              key={index}
-              value={seal}
-              onChange={(e) => {
-
-                const copy =
-                  [...sealNumbers];
-
-                copy[index] =
-                  e.target.value;
-
-                setSealNumbers(
-                  copy
-                );
-
-              }}
+            <div
               className="
                 w-full
                 border
                 rounded
                 p-2
-                mb-2
+                bg-slate-50
+                text-slate-700
+              "
+            >
+              {selectedOperation.checkIn.atraco?.clienteFinal}
+            </div>
+
+          </div>
+
+          <div className="mb-4">
+
+            <label>
+              Pallets
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              value={pallets}
+              onChange={(e) =>
+                setPallets(e.target.value)
+              }
+              className="
+                w-full
+                border
+                rounded
+                p-2
               "
             />
 
-          )
-        )}
+          </div>
 
-        <button
-          onClick={() =>
-            setSealNumbers([
-              ...sealNumbers,
-              ""
-            ])
-          }
-          className="
-            text-blue-600
-          "
-        >
-          + Agregar Precinto
-        </button>
+        </>
 
-      </div>
+      ) : (
+
+        <>
+
+          <div className="mb-4">
+
+            <label>
+              Hoja de Ruta
+            </label>
+
+            <input
+              value={
+                routeSheetNumber
+              }
+              onChange={(e) =>
+                setRouteSheetNumber(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+                border
+                rounded
+                p-2
+              "
+            />
+
+          </div>
+
+          <div className="mb-4">
+
+            <label>
+              Precintos
+            </label>
+
+            {sealNumbers.map(
+              (
+                seal,
+                index
+              ) => (
+
+                <input
+                  key={index}
+                  value={seal}
+                  onChange={(e) => {
+
+                    const copy =
+                      [...sealNumbers];
+
+                    copy[index] =
+                      e.target.value;
+
+                    setSealNumbers(
+                      copy
+                    );
+
+                  }}
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                    mb-2
+                  "
+                />
+
+              )
+            )}
+
+            <button
+              onClick={() =>
+                setSealNumbers([
+                  ...sealNumbers,
+                  ""
+                ])
+              }
+              className="
+                text-blue-600
+              "
+            >
+              + Agregar Precinto
+            </button>
+
+          </div>
+
+        </>
+
+      )}
 
       <div
         className="
@@ -488,6 +634,220 @@ const [
   </div>
 
 )}
+
+      {showAtracoModal && selectedOperation && (
+
+        <div
+          className="
+            fixed inset-0
+            bg-black/50
+            flex items-center
+            justify-center
+          "
+        >
+
+          <div
+            className="
+              bg-white
+              p-6
+              rounded-xl
+              w-[500px]
+            "
+          >
+
+            <h2
+              className="
+                text-xl
+                font-bold
+                mb-4
+              "
+            >
+              Atraco
+            </h2>
+
+            <div className="space-y-3 mb-4">
+
+              <div>
+
+                <label>
+                  Cuñas colocadas
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={atracoForm.cunasColocadas}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      cunasColocadas: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
+
+              </div>
+
+              <div className="flex items-center gap-2">
+
+                <input
+                  type="checkbox"
+                  checked={atracoForm.llavesOk}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      llavesOk: e.target.checked
+                    })
+                  }
+                />
+
+                <label>
+                  Llaves OK
+                </label>
+
+              </div>
+
+              <div>
+
+                <label>
+                  Cliente final
+                </label>
+
+                <input
+                  value={atracoForm.clienteFinal}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      clienteFinal: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
+
+              </div>
+
+              <div>
+
+                <label>
+                  Receptor
+                </label>
+
+                <input
+                  value={atracoForm.receptor}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      receptor: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
+
+              </div>
+
+              <div>
+
+                <label>
+                  Auditor
+                </label>
+
+                <input
+                  value={atracoForm.auditor}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      auditor: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
+
+              </div>
+
+              <div>
+
+                <label>
+                  Cargador
+                </label>
+
+                <input
+                  value={atracoForm.cargador}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      cargador: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
+
+              </div>
+
+            </div>
+
+            <div
+              className="
+                flex
+                justify-end
+                gap-2
+              "
+            >
+
+              <button
+                onClick={() => {
+                  setShowAtracoModal(false);
+                  setSelectedOperation(null);
+                }}
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={handleSubmitAtraco}
+                className="
+                  bg-amber-500
+                  hover:bg-amber-600
+                  text-white
+                  px-4
+                  py-2
+                  rounded
+                "
+              >
+                Confirmar Atraco
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </MainLayout>
 

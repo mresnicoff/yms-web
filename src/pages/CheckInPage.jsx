@@ -30,6 +30,14 @@ import {
 } from "../services/checkInService";
 
 import {
+  getWarehouses
+} from "../services/catalogService";
+
+import {
+  syncInfologTrips
+} from "../services/infologService";
+
+import {
   useAuth
 } from "../context/AuthContext";
 
@@ -60,6 +68,12 @@ export default function CheckInPage() {
   const [drivers, setDrivers]= useState([]);
 const [selectedDriverId, setSelectedDriverId]= useState("");
 
+  const [selectedSemiTruckId, setSelectedSemiTruckId] = useState("");
+
+  const [warehouses, setWarehouses] = useState([]);
+  const [infologWarehouseId, setInfologWarehouseId] = useState("");
+  const [syncingInfolog, setSyncingInfolog] = useState(false);
+
   useEffect(() => {
 
     loadData();
@@ -74,11 +88,13 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
         const [
           appointmentsData,
           trucksData,
-          driversData
+          driversData,
+          warehousesData
         ] = await Promise.all([
           getAppointments(),
           getTrucks(),
-          getDrivers()
+          getDrivers(),
+          getWarehouses()
         ]);
 
         setAppointments(
@@ -90,6 +106,14 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
           trucksData
         );
 
+        setWarehouses(
+          warehousesData
+        );
+
+        setInfologWarehouseId((current) =>
+          current || warehousesData[0]?.id || ""
+        );
+
       } catch (error) {
 
         console.error(error);
@@ -97,6 +121,49 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
       }
 
     };
+
+  const handleSyncInfolog = async () => {
+
+    if (!infologWarehouseId) return;
+
+    setSyncingInfolog(true);
+
+    try {
+
+      const result = await syncInfologTrips({
+        warehouseId: infologWarehouseId
+      });
+
+      if (result.skipped) {
+
+        alert(
+          "Ya se sincronizó hace poco, no hace falta volver a consultar Infolog todavía."
+        );
+
+      } else {
+
+        alert(
+          `Infolog sincronizado ✅\n\nNuevos: ${result.created}\nActualizados: ${result.updated}\nSin cambios: ${result.unchanged}`
+        );
+
+      }
+
+      await loadData();
+
+    } catch (error) {
+
+      alert(
+        error.response?.data?.message ||
+        "Error sincronizando viajes de Infolog"
+      );
+
+    } finally {
+
+      setSyncingInfolog(false);
+
+    }
+
+  };
 
 const handleCheckIn =
   async () => {
@@ -178,6 +245,9 @@ if (!validation.valid) {
           truckId:
             selectedTruckId,
 
+          semiTruckId:
+            selectedSemiTruckId || undefined,
+
             driverId:selectedDriverId,
 
           createdById:
@@ -255,6 +325,7 @@ else {
 
       setSelectedTruckId("");
       setSelectedDriverId("");
+      setSelectedSemiTruckId("");
 
       await loadData();
 
@@ -290,6 +361,71 @@ else {
         Check-In
       </h1>
 
+      <div
+        className="
+          bg-white
+          border
+          rounded-xl
+          p-4
+          mb-6
+          flex
+          items-center
+          gap-3
+          flex-wrap
+        "
+      >
+
+        <span className="text-sm text-slate-600">
+          Viajes de Infolog (Fátima):
+        </span>
+
+        <select
+          value={infologWarehouseId}
+          onChange={(e) =>
+            setInfologWarehouseId(e.target.value)
+          }
+          className="
+            border
+            rounded-lg
+            px-3
+            py-2
+          "
+        >
+
+          {warehouses.map((warehouse) => (
+
+            <option
+              key={warehouse.id}
+              value={warehouse.id}
+            >
+              {warehouse.name}
+            </option>
+
+          ))}
+
+        </select>
+
+        <button
+          type="button"
+          disabled={syncingInfolog || !infologWarehouseId}
+          onClick={handleSyncInfolog}
+          className="
+            bg-slate-800
+            hover:bg-slate-900
+            text-white
+            px-4
+            py-2
+            rounded-lg
+            disabled:bg-slate-300
+          "
+        >
+          {syncingInfolog
+            ? "Sincronizando..."
+            : "Sincronizar viajes de Infolog"}
+        </button>
+
+      </div>
+
       <AppointmentTable
         appointments={
           scheduledAppointments
@@ -305,6 +441,7 @@ else {
             ""
           );
           setSelectedDriverId("");
+          setSelectedSemiTruckId("");
 
         }}
       />
@@ -458,6 +595,59 @@ else {
                   )}
 
                 </select>
+
+                {selectedAppointment.externalTripId && (
+
+                  <>
+
+                    <strong>
+                      Semi-acoplado:
+                    </strong>
+
+                    <select
+                      value={selectedSemiTruckId}
+                      onChange={(e) =>
+                        setSelectedSemiTruckId(
+                          e.target.value
+                        )
+                      }
+                      className="
+                        block
+                        w-full
+                        mt-2
+                        border
+                        rounded-lg
+                        px-3
+                        py-2
+                      "
+                    >
+
+                      <option value="">
+                        Sin semi / no aplica
+                      </option>
+
+                      {trucks
+                        .filter(
+                          (truck) =>
+                            truck.id !== selectedTruckId
+                        )
+                        .map((truck) => (
+
+                          <option
+                            key={truck.id}
+                            value={truck.id}
+                          >
+                            {truck.plate}
+                          </option>
+
+                        ))}
+
+                    </select>
+
+                  </>
+
+                )}
+
 <strong>
   Chofer:
 </strong>

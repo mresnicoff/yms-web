@@ -23,6 +23,11 @@ const ASSIGNMENT_MODE_OPTIONS = [
   { value: "MANUAL", label: "Manual" }
 ];
 
+const CHECKOUT_MODE_OPTIONS = [
+  { value: "DISPATCH", label: "Hoja de ruta + precintos (estándar)" },
+  { value: "CLIENT_PALLETS", label: "Cliente + pallets (flujo Fátima/Infolog)" }
+];
+
 function WeeklyScheduleEditor({ schedules, onChange }) {
 
   const updateDay = (weekday, patch) => {
@@ -108,7 +113,8 @@ export default function WarehousesPage() {
     code: "",
     name: "",
     address: "",
-    active: true
+    active: true,
+    checkoutMode: "DISPATCH"
   });
 
   const [dockGroupModal, setDockGroupModal] = useState(null);
@@ -186,7 +192,13 @@ export default function WarehousesPage() {
 
   const openCreateWarehouse = () => {
 
-    setWarehouseForm({ code: "", name: "", address: "", active: true });
+    setWarehouseForm({
+      code: "",
+      name: "",
+      address: "",
+      active: true,
+      checkoutMode: "DISPATCH"
+    });
     setWarehouseModal({ mode: "create" });
 
   };
@@ -197,7 +209,8 @@ export default function WarehousesPage() {
       code: warehouse.code,
       name: warehouse.name,
       address: warehouse.address || "",
-      active: warehouse.active
+      active: warehouse.active,
+      checkoutMode: warehouse.checkoutMode || "DISPATCH"
     });
 
     setWarehouseModal({ mode: "edit", warehouse });
@@ -234,7 +247,8 @@ export default function WarehousesPage() {
         await createWarehouse({
           code: warehouseForm.code.trim(),
           name: warehouseForm.name.trim(),
-          address: warehouseForm.address.trim() || undefined
+          address: warehouseForm.address.trim() || undefined,
+          checkoutMode: warehouseForm.checkoutMode
         });
 
       } else {
@@ -243,7 +257,8 @@ export default function WarehousesPage() {
           code: warehouseForm.code.trim(),
           name: warehouseForm.name.trim(),
           address: warehouseForm.address.trim(),
-          active: warehouseForm.active
+          active: warehouseForm.active,
+          checkoutMode: warehouseForm.checkoutMode
         });
 
       }
@@ -582,6 +597,12 @@ export default function WarehousesPage() {
                       </span>
                     )}
 
+                    {warehouse.checkoutMode === "CLIENT_PALLETS" && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                        Check-Out: cliente + pallets
+                      </span>
+                    )}
+
                   </div>
 
                   {warehouse.address && (
@@ -740,6 +761,29 @@ export default function WarehousesPage() {
                 onChange={handleWarehouseFormChange}
                 className="border rounded-lg px-3 py-2"
               />
+
+              <div>
+
+                <label className="text-sm text-slate-600">
+                  Modo de Check-Out
+                </label>
+
+                <select
+                  name="checkoutMode"
+                  value={warehouseForm.checkoutMode}
+                  onChange={handleWarehouseFormChange}
+                  className="border rounded-lg px-3 py-2 w-full mt-1"
+                >
+
+                  {CHECKOUT_MODE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+
+                </select>
+
+              </div>
 
               {warehouseModal.mode === "edit" && (
 
