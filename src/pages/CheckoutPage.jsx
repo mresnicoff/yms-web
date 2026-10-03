@@ -113,12 +113,7 @@ const [
 
     setAtracoForm({
       ...emptyAtracoForm,
-      horaAtraco: toDatetimeLocalValue(new Date()),
-      // El cliente final es el que Infolog manda como "cliente" del viaje
-      // (lo que antes se mostraba, por error, en la columna Proveedor).
-      // Se precarga pero queda editable por si hay que corregirlo.
-      clienteFinal:
-        operation.checkIn.appointment.supplier?.name || ""
+      horaAtraco: toDatetimeLocalValue(new Date())
     });
 
     setShowAtracoModal(true);
@@ -183,7 +178,15 @@ const [
       );
 
       setRouteSheetNumber(
-        ""
+        operation.checkIn
+          .appointment
+          .externalTripId
+          // Para turnos de Infolog, el Proveedor del turno YA es el
+          // código de Hoja de Ruta: se precarga (editable) desde ahí.
+          ? operation.checkIn
+              .appointment
+              .supplier?.name || ""
+          : ""
       );
 
       setSealNumbers(
@@ -333,7 +336,7 @@ const [
               </th>
 
               <th className="p-4 text-left">
-                Proveedor
+                Proveedor o Ruta
               </th>
 
               <th className="p-4 text-left">
@@ -373,15 +376,13 @@ const [
 
                   <td className="p-4">
                     {
-                      // Para turnos de Infolog, acá se muestra el número de
-                      // viaje (no el cliente final: ese se usa en el Atraco).
+                      // Para turnos de Infolog, el Proveedor del turno es
+                      // directamente el código de Hoja de Ruta (se resuelve
+                      // así desde el sync, no hace falta distinguir acá).
                       operation.checkIn
                         .appointment
-                        .externalTripId ||
-                        operation.checkIn
-                          .appointment
-                          .supplier
-                          .name
+                        .supplier
+                        .name
                     }
                   </td>
 

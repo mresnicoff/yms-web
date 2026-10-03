@@ -62,7 +62,7 @@ export default function AppointmentTable({
             </th>
 
             <th className="text-left p-4">
-              Proveedor
+              Proveedor o Ruta
             </th>
 
             <th className="text-left p-4">
@@ -128,10 +128,10 @@ export default function AppointmentTable({
                 <td className="p-4">
 
                   {
-                    // Para turnos de Infolog, acá se muestra el número de
-                    // viaje (no el cliente final: ese se usa en el Atraco).
-                    appointment.externalTripId ||
-                      appointment.supplier?.name
+                    // Para turnos de Infolog, el Proveedor del turno es
+                    // directamente el código de Hoja de Ruta (se resuelve
+                    // así desde el sync, no hace falta distinguir acá).
+                    appointment.supplier?.name
                   }
 
                 </td>
