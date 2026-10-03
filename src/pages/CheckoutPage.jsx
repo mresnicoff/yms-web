@@ -84,10 +84,7 @@ const [
     };
 
   const needsAtraco = (operation) =>
-    Boolean(
-      operation.checkIn.appointment.externalTripId &&
-      !operation.checkIn.atraco
-    );
+    !operation.checkIn.atraco;
 
   const isClientPalletsMode = (operation) =>
     operation.checkIn.appointment.warehouse?.checkoutMode ===

@@ -70,10 +70,6 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
 
   const [selectedSemiTruckId, setSelectedSemiTruckId] = useState("");
 
-  const [warehouses, setWarehouses] = useState([]);
-  const [infologWarehouseId, setInfologWarehouseId] = useState("");
-  const [syncingInfolog, setSyncingInfolog] = useState(false);
-
   useEffect(() => {
 
     loadData();
@@ -97,21 +93,19 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
           getWarehouses()
         ]);
 
-        setAppointments(
-          appointmentsData
-        );
         setDrivers(driversData);
 
         setTrucks(
           trucksData
         );
 
-        setWarehouses(
-          warehousesData
-        );
+        const synced =
+          await autoSyncInfolog(warehousesData);
 
-        setInfologWarehouseId((current) =>
-          current || warehousesData[0]?.id || ""
+        setAppointments(
+          synced
+            ? await getAppointments()
+            : appointmentsData
         );
 
       } catch (error) {
@@ -122,46 +116,50 @@ const [selectedDriverId, setSelectedDriverId]= useState("");
 
     };
 
-  const handleSyncInfolog = async () => {
+  // Se sincroniza solo al entrar a Check-In (sin botón manual). El propio
+  // backend aplica el cooldown de una hora por depósito, así que acá
+  // simplemente se intenta para cada depósito activo; si no corresponde
+  // todavía, vuelve con skipped:true y no hace falta avisar nada.
+  const autoSyncInfolog = async (warehousesData) => {
 
-    if (!infologWarehouseId) return;
+    let anySynced = false;
+    const errors = [];
 
-    setSyncingInfolog(true);
+    for (const warehouse of warehousesData || []) {
 
-    try {
+      try {
 
-      const result = await syncInfologTrips({
-        warehouseId: infologWarehouseId
-      });
+        const result = await syncInfologTrips({
+          warehouseId: warehouse.id
+        });
 
-      if (result.skipped) {
+        if (!result.skipped) {
+          anySynced = true;
+        }
 
-        alert(
-          "Ya se sincronizó hace poco, no hace falta volver a consultar Infolog todavía."
-        );
+      } catch (error) {
 
-      } else {
-
-        alert(
-          `Infolog sincronizado ✅\n\nNuevos: ${result.created}\nActualizados: ${result.updated}\nSin cambios: ${result.unchanged}`
+        errors.push(
+          `${warehouse.name}: ${
+            error.response?.data?.message ||
+            "error desconocido"
+          }`
         );
 
       }
 
-      await loadData();
+    }
 
-    } catch (error) {
+    if (errors.length > 0) {
 
       alert(
-        error.response?.data?.message ||
-        "Error sincronizando viajes de Infolog"
+        "⚠️ Error sincronizando viajes de Infolog:\n\n" +
+        errors.join("\n")
       );
 
-    } finally {
-
-      setSyncingInfolog(false);
-
     }
+
+    return anySynced;
 
   };
 
@@ -361,71 +359,6 @@ else {
         Check-In
       </h1>
 
-      <div
-        className="
-          bg-white
-          border
-          rounded-xl
-          p-4
-          mb-6
-          flex
-          items-center
-          gap-3
-          flex-wrap
-        "
-      >
-
-        <span className="text-sm text-slate-600">
-          Viajes de Infolog (Fátima):
-        </span>
-
-        <select
-          value={infologWarehouseId}
-          onChange={(e) =>
-            setInfologWarehouseId(e.target.value)
-          }
-          className="
-            border
-            rounded-lg
-            px-3
-            py-2
-          "
-        >
-
-          {warehouses.map((warehouse) => (
-
-            <option
-              key={warehouse.id}
-              value={warehouse.id}
-            >
-              {warehouse.name}
-            </option>
-
-          ))}
-
-        </select>
-
-        <button
-          type="button"
-          disabled={syncingInfolog || !infologWarehouseId}
-          onClick={handleSyncInfolog}
-          className="
-            bg-slate-800
-            hover:bg-slate-900
-            text-white
-            px-4
-            py-2
-            rounded-lg
-            disabled:bg-slate-300
-          "
-        >
-          {syncingInfolog
-            ? "Sincronizando..."
-            : "Sincronizar viajes de Infolog"}
-        </button>
-
-      </div>
-
       <AppointmentTable
         appointments={
           scheduledAppointments
@@ -596,57 +529,49 @@ else {
 
                 </select>
 
-                {selectedAppointment.externalTripId && (
+                <strong>
+                  Semi-acoplado:
+                </strong>
 
-                  <>
+                <select
+                  value={selectedSemiTruckId}
+                  onChange={(e) =>
+                    setSelectedSemiTruckId(
+                      e.target.value
+                    )
+                  }
+                  className="
+                    block
+                    w-full
+                    mt-2
+                    border
+                    rounded-lg
+                    px-3
+                    py-2
+                  "
+                >
 
-                    <strong>
-                      Semi-acoplado:
-                    </strong>
+                  <option value="">
+                    Sin semi / no aplica
+                  </option>
 
-                    <select
-                      value={selectedSemiTruckId}
-                      onChange={(e) =>
-                        setSelectedSemiTruckId(
-                          e.target.value
-                        )
-                      }
-                      className="
-                        block
-                        w-full
-                        mt-2
-                        border
-                        rounded-lg
-                        px-3
-                        py-2
-                      "
-                    >
+                  {trucks
+                    .filter(
+                      (truck) =>
+                        truck.id !== selectedTruckId
+                    )
+                    .map((truck) => (
 
-                      <option value="">
-                        Sin semi / no aplica
+                      <option
+                        key={truck.id}
+                        value={truck.id}
+                      >
+                        {truck.plate}
                       </option>
 
-                      {trucks
-                        .filter(
-                          (truck) =>
-                            truck.id !== selectedTruckId
-                        )
-                        .map((truck) => (
+                    ))}
 
-                          <option
-                            key={truck.id}
-                            value={truck.id}
-                          >
-                            {truck.plate}
-                          </option>
-
-                        ))}
-
-                    </select>
-
-                  </>
-
-                )}
+                </select>
 
 <strong>
   Chofer:
