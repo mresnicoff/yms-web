@@ -128,8 +128,10 @@ export default function AppointmentTable({
                 <td className="p-4">
 
                   {
-                    appointment.supplier
-                      ?.name
+                    // Para turnos de Infolog, acá se muestra el número de
+                    // viaje (no el cliente final: ese se usa en el Atraco).
+                    appointment.externalTripId ||
+                      appointment.supplier?.name
                   }
 
                 </td>

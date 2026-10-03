@@ -113,7 +113,12 @@ const [
 
     setAtracoForm({
       ...emptyAtracoForm,
-      horaAtraco: toDatetimeLocalValue(new Date())
+      horaAtraco: toDatetimeLocalValue(new Date()),
+      // El cliente final es el que Infolog manda como "cliente" del viaje
+      // (lo que antes se mostraba, por error, en la columna Proveedor).
+      // Se precarga pero queda editable por si hay que corregirlo.
+      clienteFinal:
+        operation.checkIn.appointment.supplier?.name || ""
     });
 
     setShowAtracoModal(true);
@@ -368,10 +373,15 @@ const [
 
                   <td className="p-4">
                     {
+                      // Para turnos de Infolog, acá se muestra el número de
+                      // viaje (no el cliente final: ese se usa en el Atraco).
                       operation.checkIn
                         .appointment
-                        .supplier
-                        .name
+                        .externalTripId ||
+                        operation.checkIn
+                          .appointment
+                          .supplier
+                          .name
                     }
                   </td>
 
