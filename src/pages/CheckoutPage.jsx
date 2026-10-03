@@ -20,10 +20,27 @@ import {
 const emptyAtracoForm = {
   cunasColocadas: "0",
   llavesOk: true,
+  horaAtraco: "",
   clienteFinal: "",
   receptor: "",
   auditor: "",
   cargador: ""
+};
+
+// Formatea un Date al formato que espera un <input type="datetime-local">
+// (hora local del navegador, que para los operadores es la de Bs. As.).
+const toDatetimeLocalValue = (date) => {
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return (
+    date.getFullYear() +
+    "-" + pad(date.getMonth() + 1) +
+    "-" + pad(date.getDate()) +
+    "T" + pad(date.getHours()) +
+    ":" + pad(date.getMinutes())
+  );
+
 };
 
 export default function CheckoutPage() {
@@ -93,7 +110,12 @@ const [
   const handleOpenAtraco = (operation) => {
 
     setSelectedOperation(operation);
-    setAtracoForm(emptyAtracoForm);
+
+    setAtracoForm({
+      ...emptyAtracoForm,
+      horaAtraco: toDatetimeLocalValue(new Date())
+    });
+
     setShowAtracoModal(true);
 
   };
@@ -106,6 +128,9 @@ const [
         checkInId: selectedOperation.checkIn.id,
         cunasColocadas: Number(atracoForm.cunasColocadas) || 0,
         llavesOk: atracoForm.llavesOk,
+        horaAtraco: atracoForm.horaAtraco
+          ? new Date(atracoForm.horaAtraco).toISOString()
+          : undefined,
         clienteFinal: atracoForm.clienteFinal,
         receptor: atracoForm.receptor,
         auditor: atracoForm.auditor,
@@ -706,6 +731,31 @@ const [
                 <label>
                   Llaves OK
                 </label>
+
+              </div>
+
+              <div>
+
+                <label>
+                  Hora del Atraco
+                </label>
+
+                <input
+                  type="datetime-local"
+                  value={atracoForm.horaAtraco}
+                  onChange={(e) =>
+                    setAtracoForm({
+                      ...atracoForm,
+                      horaAtraco: e.target.value
+                    })
+                  }
+                  className="
+                    w-full
+                    border
+                    rounded
+                    p-2
+                  "
+                />
 
               </div>
 
