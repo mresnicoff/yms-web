@@ -82,10 +82,10 @@ export default function LoginPage() {
 
         <div className="relative max-w-md">
           <h2 className="font-display text-6xl font-extrabold leading-[0.95] uppercase">
-            Menos camiones esperando en la puerta.
+            Sin Excel. Sin llamadas. Cada camión a su dock.
           </h2>
           <p className="mt-6 text-slate-300 text-lg">
-            Turnos pedidos por el proveedor, muelle asignado y aviso al chofer por WhatsApp.
+            El proveedor reserva su turno, los viajes de salida llegan desde tu WMS y el chofer recibe el aviso del dock por WhatsApp, automáticamente.
           </p>
         </div>
 
