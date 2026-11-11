@@ -17,6 +17,7 @@ import WarehousesPage from "../pages/WarehousesPage";
 import ProtectedRoute
   from "./ProtectedRoute";
 import DocumentRulesPage from "../pages/DocumentRulesPage";
+import SlaPage from "../pages/SlaPage";
 
 // Matriz de permisos por pantalla (repaso de permisos, ver Sidebar.jsx
 // para el detalle de qué ve cada rol en el menú). Admin siempre está
@@ -29,7 +30,8 @@ const ROLES = {
   DRIVERS: ["ADMIN", "PLANNER", "GATE_OPERATOR"],
   CHECKIN: ["ADMIN", "PLANNER", "GATE_OPERATOR"],
   DOCKS: ["ADMIN", "PLANNER", "YARD_OPERATOR"],
-  DOCUMENT_TYPES: ["ADMIN", "PLANNER"]
+  DOCUMENT_TYPES: ["ADMIN", "PLANNER"],
+  SLA: ["ADMIN", "PLANNER"]
 };
 
 export default function AppRouter() {
@@ -49,6 +51,15 @@ export default function AppRouter() {
           element={
             <ProtectedRoute roles={ROLES.DOCUMENT_TYPES}>
               <DocumentTypesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/sla"
+          element={
+            <ProtectedRoute roles={ROLES.SLA}>
+              <SlaPage />
             </ProtectedRoute>
           }
         />

@@ -64,6 +64,16 @@ export default function Sidebar() {
         )}
 
         {(role === "ADMIN" ||
+          role === "PLANNER") && (
+          <NavLink
+            to="/sla"
+            className={linkClass}
+          >
+            Tiempos y SLA
+          </NavLink>
+        )}
+
+        {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "SUPPLIER") && (
           <NavLink
