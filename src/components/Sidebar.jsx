@@ -1,5 +1,5 @@
 import {
-  Link,
+  NavLink,
   useNavigate
 } from "react-router-dom";
 
@@ -26,184 +26,152 @@ export default function Sidebar() {
 
   const role = user?.role;
 
+  const linkClass = ({ isActive }) =>
+    `block rounded-lg px-3 py-2 text-sm transition ${
+      isActive
+        ? "bg-signal text-ink font-semibold"
+        : "text-slate-300 hover:bg-white/10 hover:text-white"
+    }`;
+
   return (
-    <aside
-      className="
-        w-64
-        min-h-screen
-        bg-white
-        border-r
-        p-6
-      "
-    >
+    <aside className="w-64 min-h-screen bg-ink text-white p-5 flex-shrink-0">
 
-      <h1
-        className="
-          text-2xl
-          font-bold
-          mb-8
-        "
-      >
-        YMS
-      </h1>
+      <div className="font-display text-3xl font-extrabold uppercase tracking-wide mb-8 px-1">
+        YMS<span className="text-signal">Pro</span>
+      </div>
 
-      <div
-        className="
-          mb-8
-          p-4
-          rounded-lg
-          bg-slate-50
-          border
-        "
-      >
-        <div className="font-semibold">
+      <div className="mb-6 px-3 py-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="font-semibold text-sm break-all">
           {user?.email}
         </div>
 
-        <div
-          className="
-            text-sm
-            text-slate-500
-            mt-1
-          "
-        >
+        <div className="text-xs uppercase tracking-wider text-signal mt-1">
           {user?.role}
         </div>
       </div>
 
-      <nav
-        className="
-          flex
-          flex-col
-          gap-3
-        "
-      >
+      <nav className="flex flex-col gap-1">
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "YARD_OPERATOR") && (
-          <Link
+          <NavLink
             to="/dashboard"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Dashboard
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "SUPPLIER") && (
-          <Link
+          <NavLink
             to="/appointments"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Turnos
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "GATE_OPERATOR") && (
-          <Link
+          <NavLink
             to="/trucks"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Vehículo
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "GATE_OPERATOR" ||
           role === "YARD_OPERATOR") && (
-          <Link
+          <NavLink
             to="/checkout"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Check-Out
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "GATE_OPERATOR") && (
-          <Link
+          <NavLink
             to="/drivers"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Choferes
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "GATE_OPERATOR") && (
-          <Link
+          <NavLink
             to="/checkin"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Check-In
-          </Link>
+          </NavLink>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER") && (
           <>
-            <Link
+            <NavLink
               to="/docTypes"
-              className="hover:text-blue-600"
+              className={linkClass}
             >
               Exigencias de documentos
-            </Link>
+            </NavLink>
 
-            <Link
+            <NavLink
               to="/document-types"
-              className="hover:text-blue-600"
+              className={linkClass}
             >
               Tipos de documentos
-            </Link>
+            </NavLink>
           </>
         )}
 
         {(role === "ADMIN" ||
           role === "PLANNER" ||
           role === "YARD_OPERATOR") && (
-          <Link
+          <NavLink
             to="/docks"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Docks
-          </Link>
+          </NavLink>
         )}
 
         {role === "ADMIN" && (
-          <Link
+          <NavLink
             to="/users"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Usuarios
-          </Link>
+          </NavLink>
         )}
 
         {role === "ADMIN" && (
-          <Link
+          <NavLink
             to="/warehouses"
-            className="hover:text-blue-600"
+            className={linkClass}
           >
             Warehouses
-          </Link>
+          </NavLink>
         )}
 
         <button
           onClick={handleLogout}
-          className="
-            mt-8
-            text-left
-            text-red-600
-            hover:text-red-700
-          "
+          className="mt-8 text-left rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-white/10 hover:text-white"
         >
-          Logout
+          Cerrar sesión
         </button>
 
       </nav>

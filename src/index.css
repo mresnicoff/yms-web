@@ -1,9 +1,94 @@
 @import "tailwindcss";
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #f8fafc;
-  color: #0f172a;
-  font-family: Inter, sans-serif;
+/* ============================================================
+   Marca YMSPro: mismos colores y tipografías que resnicoff.dev
+   y la página de oferta. Para cambiar el aspecto de toda la app
+   alcanza con tocar los valores de este bloque.
+   ============================================================ */
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+
+  --color-ink: #0f1b27;
+  --color-ink-soft: #1a2a3a;
+  --color-brand: #1d4f7c;
+  --color-brand-dark: #153b5d;
+  --color-signal: #f3aa3c;
+  --color-signal-dark: #c4780a;
+  --color-surface: #f4f6f8;
+  --color-line: #d5dce4;
+
+  /* Los azules que ya usan las pantallas pasan a ser el azul de la marca. */
+  --color-blue-50: #eef4f9;
+  --color-blue-100: #dbe7f2;
+  --color-blue-600: #1d4f7c;
+  --color-blue-700: #153b5d;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--color-surface);
+    color: #14202b;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.005em;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-weight: 800;
+  }
+
+  /* Campos de formulario: todos iguales aunque la pantalla no les ponga clases. */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    border: 1px solid var(--color-line);
+    border-radius: 0.5rem;
+    background: #fff;
+    font: inherit;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 1px;
+    border-color: var(--color-brand);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+
+  /* Tablas: encabezado discreto y fila resaltada al pasar el mouse. */
+  thead th {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #55657a;
+  }
+
+  tbody tr {
+    transition: background-color 0.12s ease;
+  }
+
+  tbody tr:hover {
+    background: #f4f8fb;
+  }
 }
